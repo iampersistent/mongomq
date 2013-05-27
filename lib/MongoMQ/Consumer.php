@@ -11,7 +11,7 @@ class Consumer extends Base
     {
         $this->retrieveMessages($count);
         foreach($this->messages as $key => $message) {
-            if ($this->callback->execute($message)) {
+            if (call_user_func($this->callback, $message)) {
                 unset($this->messages[$key]);
                 $this->collection->remove(array('_id' => $message['_id']));
             }
