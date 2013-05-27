@@ -2,6 +2,8 @@
 
 namespace MongoMQ;
 
+use MongoMQ\Connection\MongoMQConnectionInterface;
+
 abstract class Base
 {
     /** @var \MongoCollection  */
@@ -10,11 +12,11 @@ abstract class Base
     protected $db;
     protected $name;
 
-    public function __construct(\MongoDB $db, $name, $collectionName = '_MongoMqQueue')
+    public function __construct(MongoMQConnectionInterface $connection, $name, $collectionName = '_MongoMqQueue')
     {
         $this->collectionName = $collectionName;
-        $this->db = $db;
+        $this->db = $connection->getMongoDB();
         $this->name = $name;
-        $this->collection = $db->selectCollection($collectionName);
+        $this->collection = $this->db->selectCollection($collectionName);
     }
 }
