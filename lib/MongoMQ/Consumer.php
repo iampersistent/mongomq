@@ -27,15 +27,19 @@ class Consumer extends Base
     {
         if (empty($this->messages)) {
             $aggregate = array(
-                array('$match' => array('name' => $$this->name)).
+                array('$match' => array('name' => $this->name)),
                 array('$sort' => array('timestamp' => -1)),
             );
 
             if ($count > 0) {
-                $aggregate[] = array('$limit' => $count);
+                $aggregate[] = array('$limit' => (integer) $count);
             }
 
-            $this->messages = $this->collection->aggregate($aggregate);
+            $results = $this->collection->aggregate($aggregate);
+            if ($results['ok'] == 0) {
+                throw new \Exception($results['errmsg']);
+            }
+            $this->messages = $results['result'];
         }
     }
 }
