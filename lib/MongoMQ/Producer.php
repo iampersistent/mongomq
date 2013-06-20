@@ -9,7 +9,8 @@ class Producer extends Base
         $data = array(
             'name' => $this->name,
             'message' => $message,
-            "timestamp" => new \MongoDate(),
+            'process' => true,
+            'timestamp' => new \MongoDate(),
         );
         $this->collection->insert($data);
     }

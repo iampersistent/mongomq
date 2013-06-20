@@ -6,22 +6,38 @@ use MongoMQ\Connection\MongoClientConnection;
 
 abstract class TestCommon extends \PHPUnit_Framework_TestCase
 {
+    protected $collection;
+    protected $collectionName = '_MongoMqQueue';
+    protected $connection;
+
+    protected function dbCollection()
+    {
+        if (!$this->collection) {
+            $this->collection = $this->getConnection()->getMongoDB()->createCollection($this->collectionName);
+        }
+
+        return $this->collection;
+    }
+
+    /**
+     * @return MongoClientConnection
+     */
     protected function getConnection()
     {
-        return new MongoClientConnection('mongodb://localhost:27017', 'test');
+        if (!$this->connection) {
+            $this->connection = new MongoClientConnection('mongodb://localhost:27017', 'test');
+        }
+
+        return $this->connection;
     }
 
     protected function getConsumer($name)
     {
-        $connection = $this->getConnection();
-
-        return new Consumer($connection, $name, '_MongoMqQueue');
+        return new Consumer($this->getConnection(), $name, $this->collectionName);
     }
 
     protected function getProducer($name)
     {
-        $connection = $this->getConnection();
-
-        return new Producer($connection, $name, '_MongoMqQueue');
+        return new Producer($this->getConnection(), $name, $this->collectionName);
     }
 }
