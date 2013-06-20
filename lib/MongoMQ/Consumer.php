@@ -44,17 +44,16 @@ class Consumer extends Base
 
     protected function handleFailure()
     {
-        $newObj = [];
-        if (isset($this->currentMessage['retries'])) {
-            if ($this->currentMessage['retries'] > 2) {
+        $newObj = $this->currentMessage;
+        if (isset($newObj['tries'])) {
+            $newObj['tries'] = $newObj['tries'] + 1;
+            if ($newObj['tries'] > 2) {
                 $newObj['process'] = false;
-            } else {
-                $newObj['process'] = $this->currentMessage['retries'] + 1;
             }
         } else {
-            $newObj['retries'] = 1;
+            $newObj['tries'] = 1;
         }
-        $criteria = ['_id' => $this->currentMessage['_id']];
+        $criteria = ['_id' => $newObj['_id']];
 
         $this->collection->update($criteria, $newObj);
     }

@@ -40,4 +40,14 @@ abstract class TestCommon extends \PHPUnit_Framework_TestCase
     {
         return new Producer($this->getConnection(), $name, $this->collectionName);
     }
+
+    protected function setUp()
+    {
+        $this->dbCollection()->drop();
+    }
+
+    protected function tearDown()
+    {
+        $this->dbCollection()->drop();
+    }
 }

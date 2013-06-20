@@ -37,20 +37,38 @@ class ConsumerTest extends TestCommon
         );
         $this->dbCollection()->insert($data);
 
-        register_shutdown_function(array($this, 'passOneFatalHandler'));
         $consumer = $this->getConsumer('test');
         $consumer->setCallback(array($this, 'consumePassOne'));
-        $consumer->consume(3);
+        $consumer->consume(4);
+        $events = $this->dbCollection()->find(array('process' => false));
+        $this->assertSame(1, $events->count(), 'events not to be processed should remain');
 
-        $events = $this->dbCollection()->find();
-        $this->assertCount(2, $events);
+        $events = $this->dbCollection()->find(array('process' => true));
+        $this->assertSame(2, $events->count());
         foreach ($events as $event) {
-            $this->assertSame(1, $event['retries']);
+            $this->assertSame(1, $event['tries']);
         }
 
-        $consumer->setCallback(array($this, 'consumePassOne'));
+        $consumer->setCallback(array($this, 'consumePassTwo'));
         $consumer->consume(3);
+        $events = $this->dbCollection()->find(array('process' => false));
+        $this->assertSame(1, $events->count(), 'events not to be processed should remain');
 
+        $events = $this->dbCollection()->find(array('process' => true));
+        $this->assertSame(1, $events->count());
+        foreach ($events as $event) {
+            $this->assertSame(2, $event['tries']);
+        }
+
+        $consumer->setCallback(array($this, 'consumePassThree'));
+        $consumer->consume(3);
+        $events = $this->dbCollection()->find(array('process' => false));
+        $this->assertSame(2, $events->count(), 'three failures should add additional event not to be processed');
+        foreach ($events as $event) {
+            if ($event['message'] == 'message 4') {
+                $this->assertSame(3, $event['tries'], 'the failing event should display 3 retries');
+            }
+        }
     }
 
     public function testConsumeWithFatalHandler()
